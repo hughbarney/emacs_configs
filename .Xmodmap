@@ -1,0 +1,33 @@
+! PROBLEM: The Alt/Meta key binding on X Windows and PCs often
+! bound togther.
+!
+! $ xmodmap   # check the output and bindings
+! xmodmap:  up to 4 keys per modifier, (keycodes in parentheses):
+!
+! shift       Shift_L (0x32),  Shift_R (0x3e)
+! lock        Caps_Lock (0x42)
+! control     Control_L (0x25),  Control_R (0x69)
+! mod1        Alt_L (0x40),  Meta_L (0xcd)
+! mod2        Num_Lock (0x4d)
+! mod3      
+! mod4        Super_L (0x85),  Super_R (0x86),  Super_L (0xce),  Hyper_L (0xcf)
+! mod5        ISO_Level3_Shift (0x5c),  Mode_switch (0xcb)
+!
+! # The problem here is that mod1 bound to Alt and Meta, they need to be
+! # seperated. Also:
+!
+! $ xmodmap -pke |grep Meta  ## check the actual keys
+! keycode  64 = Alt_L Meta_L Alt_L Meta_L
+! keycode 205 = NoSymbol Meta_L NoSymbol Meta_L
+!
+! # we can see that Alt_L and Meta are bound to key 64
+! # so they have to be split as well
+! # note that ! is the xmodmap comment symbol
+! SOLUTION: use the following scipt in  .xmodmaprc or  .Xmodmap (on ubuntu linux)
+!
+
+clear mod1
+clear mod3
+keycode 64 = Alt_L Alt_L Alt_L Alt_L
+add mod1 = Meta_L
+add mod3 = Alt_L

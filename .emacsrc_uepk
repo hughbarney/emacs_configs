@@ -1,0 +1,30 @@
+;;
+;; ~/.emacsrc for uEmacs/PK
+;;
+
+;;
+;; CTRL+S does not work - major drawback for ^X^S and ^S
+;; 
+
+;; isearch works but does not wrap (Esc to exit, ^X to search next)
+;; ^R iseach backwards during isearch
+
+;; ^X^D to save file
+;; ^X? describe-key
+;; M-A apropos
+;; ^XX next-buffer
+
+bind-to-key forward-character FNF
+bind-to-key forward-character FNC
+bind-to-key backward-character FNB
+bind-to-key next-window FNX
+bind-to-key beginning-of-line FN<
+bind-to-key end-of-line FN>
+bind-to-key delete-next-character FN3
+bind-to-key set-mark ^@
+
+
+update-screen
+write-message "~/.emacsrc uEmacs/PK loaded"
+set $discmd TRUE
+

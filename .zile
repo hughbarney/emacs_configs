@@ -1,0 +1,28 @@
+;;
+;; ~/.zile config file
+;;
+
+(setq inhibit-splash-screen t)
+(setq auto-save-default nil)       ; no auto save
+(setq make-backup-files nil)       ; no backup files
+(setq transient-mark-mode t)
+
+(setq tab-width 8)
+(setq tab-always-indent t)
+(setq indent-tabs-mode t)
+(setq fill-column 70)
+(setq case-fold-search t)
+(setq ring-bell t)
+
+(global-set-key "\C-b" switch-to-buffer)
+(global-set-key "\C-n" switch-to-buffer)
+
+(global-set-key "\C-o" delete-other-windows)
+(global-set-key "\F5" split-window)
+(global-set-key "\F6" delete-other-windows)
+(global-set-key "\F7" other-window)
+
+(global-set-key "\C-u" undo)
+(global-set-key "\C-x?" describe-key)
+(global-set-key "\M-v" toggle-read-only)
+

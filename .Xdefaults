@@ -1,0 +1,9 @@
+Emacs.geometry: 85x45+70+0
+
+xterm.geometry: 80x40+0+0
+xterm*font: 9x15
+xterm*loginShell: true
+xterm*vt100*geometry: 80x50
+xterm*saveLines: 2000
+
+xclock: 10x10+0+0

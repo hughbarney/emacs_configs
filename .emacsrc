@@ -1,0 +1,503 @@
+set $discmd	TRUE
+; EMACS.RC HGB's setup
+set %hgbver	"04-Jan-13 V3.92"
+set $flicker	FALSE
+set $fillcol	70
+set %cnt 0
+set %dired-dir ""
+set %dired-fspec ""
+set %macro-path "/home/hugh/src/ue_macros/"
+
+bind-to-key forward-character FNF
+bind-to-key forward-character FNC
+
+bind-to-key backward-character FNB
+bind-to-key next-window FNX
+bind-to-key beginning-of-line FN<
+bind-to-key end-of-line FN>
+bind-to-key delete-next-character FN3
+bind-to-key set-mark ^@
+
+store-procedure extension
+; figure out the filename extension. returns lowercase result in %ext
+; if no extension, returns ""
+set %temp &rig $cfname 4
+set %ext &sin %temp "."
+	!if &equ %ext 0
+		set %ext ""
+	!else
+		set %ext &low &mid %temp &add %ext 1 3
+	!endif
+!endm
+
+store-procedure readhook-proc
+	run extension
+	!if &sin "|c|h|cpp|hpp|dlg|def|rc|cmd|awk|pl|bat|lex|" &cat &cat "|" %ext "|"
+		add-mode cmode
+		set $hardtab 4
+	!else
+		!if &sin "|rof|doc|txt|" &cat &cat "|" %ext "|"
+			add-mode wrap
+		!endif
+	!endif
+!endm
+
+;set $readhook readhook-proc
+
+
+store-procedure clean
+!endm
+
+store-procedure write-to-disk
+	!force save-file
+	write-message $cfname
+!endm
+
+store-procedure ldupe
+	beginning-of-line
+	set-mark
+	!force next-line
+	!force kill-region
+	!force 2 yank
+	previous-line
+!endm
+
+store-procedure kill-to-begin
+	set-mark
+	beginning-of-line
+	!force kill-region
+	print
+!endm
+
+store-procedure ldelete
+	beginning-of-line
+	!force 1 kill-to-end-of-line
+!endm
+
+store-procedure edfile
+	set %tmp @"Edit File:"
+	!if &seq "Edit File:" %tmp
+		!return
+	!endif
+	!if &equ $numwind 1
+		2 split-current-window
+	!endif
+	!force find-file %tmp
+	;run e-colours
+!endm
+
+store-procedure viewfile
+	set %tmp @"View File:"
+	!if &seq "View File:" %tmp
+		!return
+	!endif
+	!if &not &seq "" &find %tmp
+		!if &equ $numwind 1
+			1 split-current-window
+		!endif
+		view-file %tmp
+		;run v-colours
+		!return
+	!endif
+	write-message&cat "Could not find : " %tmp
+!endm
+
+store-procedure get-help
+	!if &seq $os "MSWIN"
+		help-engine \bin\emacs\mewin.hlp
+		!return
+	!endif
+	set $discmd FALSE
+	source &cat %macro-path ehelp.cmd
+	write-messageReady
+	set $discmd TRUE
+!endm
+
+store-procedure open-up
+	!if &seq $os "MSWIN"
+		maximize-screen
+	!endif
+	delete-other-windows
+!endm
+
+store-procedure e-colours
+;	add-mode black
+;	add-mode GREEN
+!endm
+
+store-procedure v-colours
+	!if &seq $os "MSWIN"
+		;add-mode gray
+	!else
+		;add-mode white
+	!endif
+	;add-mode BLUE
+!endm
+
+store-procedure buf-colours
+	!if &band $cmode 16
+		run v-colours
+	!else
+		run e-colours
+	!endif
+!endm
+
+store-procedure next-buf
+	!force next-buffer
+	run buf-colours
+!endm
+
+store-procedure toggle-omode
+	!if &band $cmode 32
+		delete-mode OVER
+	!else
+		add-mode OVER
+	!endif
+!endm
+
+store-procedure toggle-magic
+	!if &band $cmode 64
+		delete-mode MAGIC
+	!else
+		add-mode MAGIC
+	!endif
+!endm
+
+store-procedure toggle-vmode
+	!if &band $cmode 16
+		delete-mode VIEW
+	!else
+		add-mode VIEW
+	!endif
+	run buf-colours
+!endm
+
+store-procedure toggle-wrap-mode
+	!if &band $cmode 1
+		delete-mode WRAP
+	!else
+		add-mode WRAP
+	!endif
+!endm
+
+store-procedure spell-check
+	save-file
+	write-message~n
+	;shell-command &cat "spell -uc:\bin\emacs\hugh.dct " $cfname
+	execute-file hgbscan.cmd
+!endm
+
+store-procedure last-line
+	end-of-file
+	!force previous-line
+!endm
+
+store-procedure file-stats
+	set %tmp $curline
+	!force 1 goto-line
+	set-mark
+	!force 20000 goto-line
+	count-words
+	!force %tmp goto-line
+!endm
+
+store-procedure unload-file
+	set %tmp $cbufname
+	!if &band $cmode 16
+		delete-mode VIEW
+	!endif
+	unmark-buffer
+	!force next-buffer
+	!if &not $status
+		select-buffer main
+	!endif
+	!force delete-buffer %tmp
+	!if $status
+		write-message&cat &cat "[ " %tmp " unloaded ]"
+		run buf-colours
+	!endif
+!endm
+
+store-procedure bold-line
+	beginning-of-line
+	insert-string ".B ~""
+	end-of-line
+	insert-string "~""
+	beginning-of-line
+	!force next-line
+!endm
+
+store-procedure insert-cnt
+	overwrite-string %cnt
+	next-line
+	beginning-of-line
+	set %cnt &add %cnt 1
+!endm
+
+store-procedure edit-config
+	;shell-command &cat &cat &cat &cat "copy \bin\emacs\emacs.rc \bin\emacs\hgb_rc." &mid %hgbver 12 1 &mid %hgbver 14 2 " > nul:"
+	;find-file c:\bin\emacs\changes.txt
+	find-file /home/hugh/bin/.emacsrc
+	run e-colours
+!endm
+
+store-procedure run-dired
+	source &cat %macro-path dired
+	run buf-colours
+!endm
+
+store-procedure run-bufmenu
+	source &cat %macro-path bufmenu
+	run buf-colours
+!endm
+
+store-procedure toggle-modes
+	source &cat %macro-path toggle
+!endm
+
+store-procedure get-progman
+	execute-program "progman"
+!endm
+
+store-procedure get-winfile
+	execute-program "winfile"
+!endm
+
+store-procedure query-cnt
+	set %cnt @"Enter %cnt:"
+!endm
+
+store-procedure split-win
+	!force 2 split-current-window
+!endm
+
+store-procedure insert-date
+;	overwrite-string &cat &cat &cat &cat &mid $time 9 2 "-" &mid $time 5 3 "-" &right $time 2
+	overwrite-string $time
+!endm
+
+store-procedure run-list
+	shell-command list
+!endm
+
+store-procedure run-buf
+	execute-buffer $cbufname
+!endm
+
+store-procedure load-hgbkeys
+	source &cat %macro-path hgbkeys
+!endm
+
+store-procedure trim-up
+	source &cat %macro-path trimup
+!endm
+
+store-procedure insert-fname
+	overwrite-string &low $cfname
+!endm
+
+store-procedure preview-nroff
+	source &cat %macro-path prevrof
+!endm
+
+store-procedure print-nroff
+	source &cat %macro-path printrof
+!endm
+
+store-procedure hgb-menu
+	source &cat %macro-path hgbmenu
+!endm
+
+store-procedure cycle-fg
+    set $debug TRUE
+	write-message &cat %macro-path cycle-fg.cmd
+	execute-file &cat %macro-path cycle-fg.cmd
+!endm
+
+store-procedure cycle-bg
+	execute-file &cat %macro-path cycle-bg.cmd
+!endm
+
+store-procedure get-contents
+	source &cat %macro-path contents
+!endm
+
+store-procedure load-cfile
+	source &cat %macro-path cfile
+!endm
+
+store-procedure get-job-codes
+	view-file \dc\docs\s050.txt
+	run buf-colours
+!endm
+
+store-procedure add-rc-string
+	source &cat %macro-path edstring
+!endm
+
+store-procedure store-bufs
+	source &cat %macro-path storbufs
+!endm
+
+store-procedure do-grep
+	source &cat %macro-path dogrep
+!endm
+
+store-procedure multi-load
+	source &cat %macro-path multload
+!endm
+
+store-procedure update-ts
+	source &cat %macro-path updatets
+!endm
+
+store-procedure spare1
+	source &cat %macro-path spare1
+!endm
+
+store-procedure spare2
+	source &cat %macro-path spare2
+!endm
+
+;;;  unbind keys, don't unbind, then bind on next line !
+
+!force unbind-key M-B
+!force unbind-key M-D
+!force unbind-key M-^C
+!force unbind-key M-^G
+!force unbind-key M-^L
+!force unbind-key M-^S
+!force unbind-key M-^W
+!force unbind-key M-^H
+!force unbind-key M-E
+!force unbind-key M-K
+!force unbind-key M-M
+!force unbind-key FNC
+!force unbind-key ^C
+!force unbind-key ^V
+!force unbind-key ^P
+!force unbind-key ^S
+!force unbind-key A-B
+!force unbind-key A-S
+!force unbind-key A-R
+!force unbind-key FNg
+!force unbind-key FNa
+
+;;;  Alt keys
+
+macro-to-key ldupe		A-A
+macro-to-key run-bufmenu	A-B
+bind-to-key copy-region 	A-C
+macro-to-key ldelete		A-D
+bind-to-key execute-macro	A-E
+;macro-to-key edfile		A-F
+bind-to-key find-file		A-F
+bind-to-key goto-line		A-G
+macro-to-key get-help		A-H
+bind-to-key yank		A-I
+bind-to-key kill-to-end-of-line A-K
+macro-to-key run-list		A-L
+bind-to-key set-mark		A-M
+macro-to-key next-buf		A-N
+macro-to-key open-up		A-O
+bind-to-key pipe-command	A-P
+macro-to-key unload-file	A-Q
+bind-to-key insert-file 	A-R
+macro-to-key split-win		A-S
+bind-to-key query-replace-string A-T
+bind-to-key yank		A-U
+macro-to-key viewfile		A-V
+macro-to-key write-to-disk	A-W
+bind-to-key exit-emacs		A-X
+bind-to-key yank		A-Y
+bind-to-key i-shell		A-Z
+macro-to-key load-hgbkeys	A-FN1
+macro-to-key hgb-menu		A-FN2
+bind-to-key beginning-of-file	A-FNa
+macro-to-key last-line		A-FNg
+macro-to-key cycle-fg		A-FN9
+macro-to-key cycle-bg		A-FN0
+macro-to-key cycle-fg		FN8
+macro-to-key cycle-bg		FN9
+bind-to-key next-window 	A-FNh
+bind-to-key previous-window	A-FNb
+
+;;; misc keys
+
+macro-to-key toggle-omode	FNC
+macro-to-key file-stats 	^C
+;macro-to-key run-dired		^D
+bind-to-key find-file		^F
+macro-to-key multi-load 	^X*
+macro-to-key preview-nroff	^V
+macro-to-key print-nroff	^P
+bind-to-key incremental-search	^S
+
+bind-to-key end-of-line 	FNg
+bind-to-key beginning-of-line	FNa
+bind-to-key beginning-of-file	FN^a
+macro-to-key last-line		FN^g
+
+;AST 386sx stuff
+!if &seq $os "MSDOS"
+  bind-to-key end-of-line	FN>
+  bind-to-key beginning-of-line FN<
+  bind-to-key beginning-of-file FN^<
+  macro-to-key last-line	FN^>
+!endif
+
+!if &seq $os "MSWIN"
+	unbind-key FN<
+	unbind-key FN>
+	unbind-key ^XP
+	unbind-key ^XF
+	bind-to-key beginning-of-file	A-FN<
+	macro-to-key last-line		A-FN>
+	macro-to-key last-line		FN^>
+	bind-to-key beginning-of-file	FN^<
+	bind-to-key end-of-line 	FN>
+	bind-to-key beginning-of-line	FN<
+	macro-to-key get-progman	^XP
+	macro-to-key get-winfile	^XF
+!endif
+
+;;; Esc keys
+
+bind-to-key delete-previous-word M-FND
+bind-to-key delete-next-word M-FNF
+macro-to-key edit-config	M-^C
+macro-to-key edit-config	S-FN2
+macro-to-key do-grep		M-^G
+macro-to-key get-contents	M-^I
+macro-to-key load-cfile 	M-^H
+macro-to-key get-job-codes	M-^J
+macro-to-key add-rc-string	M-^S
+macro-to-key update-ts		M-^T
+macro-to-key store-bufs 	M-^W
+macro-to-key bold-line		M-B
+macro-to-key insert-date	M-D
+macro-to-key run-buf		M-E
+macro-to-key insert-fname	M-F
+macro-to-key insert-cnt 	M-I
+bind-to-key describe-key	M-K
+macro-to-key toggle-magic	M-M
+macro-to-key trim-up		M-T
+;macro-to-key query-cnt		M-Q
+macro-to-key spell-check	M-S
+macro-to-key toggle-vmode	M-V
+macro-to-key toggle-wrap-mode	M-W
+
+;;;  f-keys
+bind-to-key incremental-search	FN1
+bind-to-key reverse-incremental-search FN2
+bind-to-key hunt-forward	FN3
+bind-to-key hunt-backward	FN4
+bind-to-key next-window 	FN7
+macro-to-key spare1		FN^1
+macro-to-key spare2		FN^2
+macro-to-key toggle-modes	FN^C
+
+update-screen
+write-message &cat "HGB setup " &cat %hgbver " Loaded"
+set $discmd TRUE
+
