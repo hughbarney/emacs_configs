@@ -1,24 +1,28 @@
+;;
+;; Unified .emacs for different OS
+;; Time-stamp: <2020-09-14 11:05:05 hughbarney>
+;;
 ;; -*-lisp-*-
-;; Time-stamp: <2018-01-20 17:48:42 hugh>
+;; -*-lisp-interaction-mode-*-
 ;;
-;; Unified .emacs file for GNU emacs, Xemacs, linux, win32 and emacs -nw setups
-;; [ Note: Windows XP reports w32 others reports win32 for window-system ]
+
 ;;
-;;   (setq ediff-diff-options '"")
-
-
 ;; General Settings
 ;;
 
-(setq inhibit-startup-screen t)            ; dont show the Emacs Window
 (setq inhibit-default-init t)              ; override system .emacs
+
+;; does not appear to work on a chromebook
+(setq initial-frame-alist '((top . 1) (left . 1) (width . 115) (height . 35)))
+
+(setq inhibit-startup-screen t)            ; dont show the Emacs Window
 (setq-default auto-save-default nil)       ; no auto save
 (setq-default make-backup-files nil)       ; no backup files
 (setq-default scroll-step 1)               ; trun off jumpy scroll
 (setq-default visible-bell t)              ; no beeps, flash on errors
 (transient-mark-mode -1)                   ; no highlight of marked region by default
 (show-paren-mode 1)                        ; show matching parenthesis
-(setq load-path (cons (expand-file-name "~/.emacs_lisp") load-path))  ;; look in own library first
+(setq load-path (cons (expand-file-name "~/site_lisp") load-path))  ;; look in own library first
 
 (display-time)                             ; display the time on modeline
 (column-number-mode t)                     ; display the column number on modeline
@@ -35,9 +39,7 @@
 ;(setq text-mode-hook 'turn-on-auto-fill)
 (setq lisp-indent-offset 2)                ; lisp mode setup
 (setq lisp-body-ident 2)
-(setq mail-archive-file-name "~/mail/sent")
 (setq display-time-mail-file t)            ; dont say Mail all the time on modeline
-;(resize-minibuffer-mode)                   ; auto resize minibuf if text wont fit
 (put 'narrow-to-region 'disabled nil)      ; allow narrow-to-region
 (put 'downcase-region 'disabled nil)       ; make searches case insensitive
 (put 'upcase-region 'disabled nil)
@@ -47,97 +49,59 @@
 (add-hook 'find-file-hooks 'my-find-file-hook)  ; setup when a file is loaded
 (add-hook 'sql-mode-hook 'my-sql-mode-hook) ; setup when going into sql mode
 (add-hook 'c-mode-hook 'customize-cc-mode) ; cc-mode setup
-;(add-hook 'c-mode-hook 'customize-java-mode) ; java-mode setup
 (add-hook 'java-mode-hook 'customize-java-mode) ; java-mode setup
 (add-hook 'write-file-hooks 'time-stamp)
 (setq message-log-max nil)
 (condition-case nil (kill-buffer "*Messages*") (error nil) ) ; no messages buffer
 
+
+
 ;;
 ;; GNU/LINUX specifics
 ;;
-(if (eq system-type 'gnu/linux)
+(if t
   (progn
     (tool-bar-mode 0)      ;; turn off tool bar (Graphics can be slow over VPN etc)
     (tooltip-mode nil)   ;; turn off those tooltip on mouse etc, they pop up when iconised
     (scroll-bar-mode -1) ;; turn off scroll bars
     (menu-bar-mode -1)
     (global-set-key [delete] `delete-char)
-	(set-default-font "Monospace 12")
-	);; progn
-);; if
+    (set-default-font "Monospace 12")
+    ))
+
 
 ;;
-;; win32: Windows 95 or NT specifics
-;; w32:   Windows XP specifics
+;; 
+;; Microsoft Windows specifics
 ;;
-
-(if (or (eq window-system 'w32) (eq window-system 'win32))
- (progn (defvar microsoft-windows t))
- (progn (defvar microsoft-windows nil))
-)
-
-(if microsoft-windows
+(if nil
  (progn
-
-   (if (eq window-system 'w32)
-	 (progn (setq w32-alt-is-meta nil))   ;; enable alt key on windows XP
-	 (progn (setq win32-alt-is-meta nil)) ;; enable alt key on windows 95/NT
-	 ) ;; if
-
    (tool-bar-mode -1)   ;; turn off tool bar (Graphics can be slow over VPN etc)
    (tooltip-mode nil)   ;; turn off those tooltip on mouse etc, they pop up when iconised
    (scroll-bar-mode -1) ;; turn off scroll bars
    (menu-bar-mode -1)
    (column-number-mode t)
    (global-set-key [delete] `delete-char)
-   ;(set-default-font "Monospace 12")
-
    (setq frame-title-format "Emacs: %b")
    (setq icon-title-format "Emacs: %b")
-   ;(set-default-font "-*-Courier-normal-r-*-*-13-97-*-*-c-*-*-ansi-")
-   ;(set-default-font "-*-Courier-normal-r-*-*-13-*-*-*-c-*-*-iso8859-1")
-   ;(set-foreground-color "grey")
    (set-foreground-color "grep3")
-   ;(setq ange-ftp-ftp-program-name "c:/bin/emacs-21.3/bin/ftp.exe")
    (setq grep-command "findstr /s /n /i ")
    (setq compile-command "build")
-   ;; turn off binary option for diff as it does not work
-   ;; with some windows diffs
    (setq ediff-diff-options '"")
    (set-default-font "Monospace 12")
- ) ;; progn
-)
+ ))
+
 
 ;;
-;; if we are a windows system (Windows or X)
-;; set the frame size
+;; Attempt to set start up size on a windowing system
 ;;
-(if (not (eq window-system nil))
+
+(if nil
   (progn
-   (set-frame-height (selected-frame) 45)
-   (set-frame-width (selected-frame) 115)
-	)
-);; if
-
-
-;;
-;; specifics to -nw mode
-;;
-(if (eq window-system 'nil)
- (progn
-   ;; fix backspace
-   (define-key global-map "\C-h" `backward-delete-char)
-   ;; support for kermit alt key setup over a modem
-   (define-key global-map "\C-X\\" `isearch-forward)
-   (define-key global-map "\C-X|" `isearch-repeat-forward)
-   (define-key global-map "\C-Xg" `goto-line)
-   (define-key global-map "\C-Xk" `my-kill-current-buffer)
-   (define-key global-map "\C-Xw" `save-buffer)
-   (define-key global-map "\C-Xz" `my-delete-line)
-   (define-key global-map "\C-Xt" `my-duplicate-line)
- )
-)
+    (set-frame-height (selected-frame) 45)
+    (set-frame-width (selected-frame) 115)
+    (set-frame-size (selected-frame) 115 35)
+    (set-frame-position (selected-frame) 1 0)))
 
 ;;
 ;; useful function to extend auto-mode-alist
@@ -177,7 +141,7 @@
 (auto-mode "\\.groovy$" 'groovy-mode)
 (auto-mode "\\.ear$" 'archive-mode)
 (auto-mode "\\.war$" 'archive-mode)
-(auto-mode "\\.md$" 'markdown-mode)
+(auto-mode "\\.el$" 'lisp-interaction-mode)
 
 ;;
 ;; Auto Mode based on #!/bin/xxx
@@ -187,32 +151,13 @@
 (add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
 
 ;;
-;; Setup keys for Traditional  Editor -  Non Incremental Searching Style
-;;
-
-;; unbind f1 and f2 keys so we can use them
-(global-unset-key [f1])
-(global-unset-key [f2])
-
-;;
-;;  Setup Functions keys to emulate other editors style of searching
-;;
-;;  f1 - search forward
-;;  f2 - repeat search forward
-;;  f3 - search backwards
-;;  f4 - repeat search backwards
-(global-set-key [f1] 'nonincremental-search-forward)
-(global-set-key [f2] 'nonincremental-repeat-search-forward)
-(global-set-key [f3] 'nonincremental-search-backward)
-(global-set-key [f4] 'nonincremental-repeat-search-backward)
-
-;;
 ;; load in CUA mode
 ;;
 ;(require 'cua)
 ;; disable by default F12 C-c to enable or toggle
-(cua-mode)
-(cua-mode)
+;(cua-mode)
+;(cua-mode)
+
 
 ;; knock out some irritations
 (global-unset-key "\C-Xf")        ;; C-X f too easy to hit with C-X C-F
@@ -224,9 +169,7 @@
 ;; key bindings
 ;;
 (global-set-key "\C-X\C-B" 'buffer-menu)
-(global-set-key "\C-Xb" 'my-cycle-buffers)
 (global-set-key "\C-Xn" 'my-cycle-buffers)
-
 (global-set-key "\C-X?" 'describe-key-briefly)
 (global-set-key [f7] 'other-window)
 (global-set-key [home] 'beginning-of-line)
@@ -234,67 +177,108 @@
 (global-set-key [(control home)] 'beginning-of-buffer)
 (global-set-key [(control end)] 'end-of-buffer)
 (global-set-key [(control f1)] `search-forward-regexp)
-(global-set-key [(alt f1)] `tags-search)
-(global-set-key (kbd "M-k") 'kill-region)
+(global-set-key (kbd "C-u") 'undo)
 (define-key esc-map [right] 'kill-word)         ;; esc -> kill-word
 (define-key esc-map [left] 'backward-kill-word) ;; esc <- backward-kill-word
+(global-set-key (kbd "C-x c") 'my-edit-dot-emacs)         ; C-x c
 
 ;;
 ;; Setup Alt Keys
 ;;
-(global-set-key [(alt home)] `beginning-of-buffer)
-(global-set-key [(alt end)] `end-of-buffer)
-(global-set-key [(alt right)] `forward-word)
-(global-set-key [(alt left)] `backward-word)
+(if t
+  (progn
+    (global-set-key [(alt home)] `beginning-of-buffer)
+    (global-set-key [(alt end)] `end-of-buffer)
+    ;(global-set-key [(alt right)] `forward-word)
+    ;(global-set-key [(alt left)] `backward-word)
+    (global-set-key [(alt a)] `my-duplicate-line)
+    (global-set-key [(alt b)] `buffer-menu)
+    (global-set-key [(alt c)] `clipboard-kill-ring-save)   ; same s copy from menu bar
+    (global-set-key [(alt d)] `my-delete-line) 
+    (global-set-key [(alt e)] `call-last-kbd-macro)        ; C-x e
+    (global-set-key [(alt f)] `find-file)                  ; C-x C-f
+    (global-set-key [(alt g)] `goto-line)
+    (global-set-key [(alt i)] `clipboard-yank)             ; C-y
+    (global-set-key [(alt k)] `kill-line)                  ; C-k
+    (global-set-key [(alt l)] `logify)                     ; (logify, kbd macro)
+    (global-set-key [(alt m)] `my-set-mark-command)        ;
+    (global-set-key [(alt n)] `my-cycle-buffers)
+    (global-set-key [(alt o)] `delete-other-windows)       ; C-x 1
+    (global-set-key [(alt p)] `next-error)                 ; C-x `
+    (global-set-key [(alt q)] `my-kill-current-buffer)     ; C-x k RET
+    (global-set-key [(alt r)] `insert-file)                ; C-x i 
+    (global-set-key [(alt s)] `split-window-vertically)    ; C-x 2 
+    (global-set-key [(alt t)] `query-replace)              ; ESC-%
+    (global-set-key [(alt u)] `advertised-undo)            ; C-x u
+    (global-set-key [(alt v)] `find-file-read-only)        ; C-x 4 r
+    (global-set-key [(alt w)] `save-buffer)                ; C-x C-S
+    (global-set-key [(alt y)] `yank)                       ; C-y
+    (global-set-key [(alt z)] `iconify-or-deiconify-frame) ; C-z
 
-(global-set-key [(alt a)] `my-duplicate-line)
-(global-set-key [(alt b)] `buffer-menu)
-(global-set-key [(alt c)] `clipboard-kill-ring-save)   ; same s copy from menu bar
-(global-set-key [(alt d)] `my-delete-line) 
-(global-set-key [(alt e)] `call-last-kbd-macro)        ; C-x e
-(global-set-key [(alt f)] `find-file)                  ; C-x C-f
-(global-set-key [(alt g)] `goto-line)
-;; alt h spare
-(global-set-key [(alt i)] `clipboard-yank)             ; C-y
-;; alt j spare
-(global-set-key [(alt k)] `kill-line)                  ; C-k
-(global-set-key [(alt l)] `logify)                     ; (logify, kbd macro)
-(global-set-key [(alt m)] `my-set-mark-command)        ;
-(global-set-key [(alt n)] `my-cycle-buffers)
-(global-set-key [(alt o)] `delete-other-windows)       ; C-x 1
-(global-set-key [(alt p)] `next-error)                 ; C-x `
-(global-set-key [(alt q)] `my-kill-current-buffer)     ; C-x k RET
-(global-set-key [(alt r)] `insert-file)                ; C-x i 
-(global-set-key [(alt s)] `split-window-vertically)    ; C-x 2 
-(global-set-key [(alt t)] `query-replace)              ; ESC-%
-(global-set-key [(alt u)] `advertised-undo)            ; C-x u
-(global-set-key [(alt v)] `find-file-read-only)        ; C-x 4 r
-(global-set-key [(alt w)] `save-buffer)                ; C-x C-S
-(global-set-key [(alt y)] `yank)                       ; C-y
-;(global-set-key [(alt z)] `iconify-or-deiconify-frame) ; C-z
+    ;; add bits to org when using ALT keys
+    (add-hook 'org-mode-hook
+      (lambda ()
+	;; add key bindings that need to work in org-mode that use the ALT key
+	(local-set-key [(alt right)] `org-metaright)          ;; alt-right
+	(local-set-key [(alt left)] `org-metaleft)            ;; alt-left
+	;;
+	))
+    ))
 
-(setq my-map-f12 (make-keymap))
-(define-key global-map [f12] my-map-f12)
+;;
+;; Using Esc instead of Alt keys
+;;
+(if nil
+  (progn
+    (global-set-key (kbd "M-a") `my-duplicate-line)
+    (global-set-key (kbd "M-b") `buffer-menu)
+    (global-set-key (kbd "M-c") `clipboard-kill-ring-save)   ; same s copy from menu bar
+    (global-set-key (kbd "M-d") `my-delete-line) 
+    (global-set-key (kbd "M-f") `find-file)                  ; C-x C-f
+    (global-set-key (kbd "M-g") `goto-line)                  ; 
+    (global-set-key (kbd "M-i") `clipboard-yank)             ; C-y
+    (global-set-key (kbd "M-k") `kill-line)                  ; C-k
+    (global-set-key (kbd "M-m") `my-set-mark-command)        ;
+    (global-set-key (kbd "M-n") `my-cycle-buffers)
+    (global-set-key (kbd "M-o") `delete-other-windows)       ; C-x 1
+    (global-set-key (kbd "M-s") `split-window-vertically)    ; C-x 2
+    (global-set-key (kbd "M-t") `query-replace)
+    (global-set-key (kbd "M-q") `my-kill-current-buffer)     ; C-x k RET
+    (global-set-key (kbd "M-w") `save-buffer)                ; C-x C-S
+    ))
 
-(define-key my-map-f12 "a" 'auto-fill-mode)            ; F12-a
-(define-key my-map-f12 "b" 'my-toggle-fix-backspace)   ; F12-b
-(define-key my-map-f12 "c" 'compile)                   ; F12-c
-(define-key my-map-f12 "d" 'my-insert-timestamp)       ; F12-d
-(define-key my-map-f12 "e" 'my-edit-dot-emacs)         ; F12-e
-(global-set-key (kbd "C-x c") 'my-edit-dot-emacs)         ; C-x c
-(define-key my-map-f12 "f" 'my-load-file-at-line-edit) ; F12-f
-(define-key my-map-f12 "v" 'my-load-file-at-line-view) ; F12-v
-(define-key my-map-f12 "g" 'my-grep)                   ; F12-g
-(define-key my-map-f12 "k" 'my-bold-keyword-toggle)    ; F12-k
-(define-key my-map-f12 "l" 'my-toggle-truncate-lines)  ; F12-l
-(define-key my-map-f12 "n" 'my-load-notes-file)        ; F12-n
-(define-key my-map-f12 "m" 'menu-bar-mode)             ; F12-m
-;;(define-key my-map-f12 "p" 'ps-print-buffer)         ; F12-p
-(define-key my-map-f12 "p" 'my-load-project-file)      ; F12-p
-(define-key my-map-f12 "r" 'my-reload-buffer)          ; F12-r
-(define-key my-map-f12 "s" 'ispell-buffer)             ; F12-s
-(define-key my-map-f12 "t" 'my-toggle-tabstops)        ; F12-t
-(define-key my-map-f12 "i" 'my-insert-import-stmt)     ; F12-i
+
+;;
+;; setting up F12 as a keymap
+;;
+
+(defvar my-use-f12-keys nil)
+
+(if my-use-f12-keys
+  (progn
+    (setq my-map-f12 (make-keymap))
+    (define-key global-map [f12] my-map-f12)
+
+    (define-key my-map-f12 "a" 'auto-fill-mode)            ; F12-a
+    (define-key my-map-f12 "b" 'my-toggle-fix-backspace)   ; F12-b
+    (define-key my-map-f12 "c" 'compile)                   ; F12-c
+    (define-key my-map-f12 "d" 'my-insert-timestamp)       ; F12-d
+    (define-key my-map-f12 "e" 'my-edit-dot-emacs)         ; F12-e
+    (define-key my-map-f12 "f" 'my-load-file-at-line-edit) ; F12-f
+    (define-key my-map-f12 "v" 'my-load-file-at-line-view) ; F12-v
+    (define-key my-map-f12 "g" 'my-grep)                   ; F12-g
+    (define-key my-map-f12 "k" 'my-bold-keyword-toggle)    ; F12-k
+    (define-key my-map-f12 "l" 'my-toggle-truncate-lines)  ; F12-l
+    (define-key my-map-f12 "n" 'my-load-notes-file)        ; F12-n
+    (define-key my-map-f12 "m" 'menu-bar-mode)             ; F12-m
+    ;;(define-key my-map-f12 "p" 'ps-print-buffer)         ; F12-p
+    (define-key my-map-f12 "p" 'my-load-project-file)      ; F12-p
+    (define-key my-map-f12 "r" 'my-reload-buffer)          ; F12-r
+    (define-key my-map-f12 "s" 'ispell-buffer)             ; F12-s
+    (define-key my-map-f12 "t" 'my-toggle-tabstops)        ; F12-t
+    (define-key my-map-f12 "i" 'my-insert-import-stmt)     ; F12-i
+    ))
+
 
 (defun my-find-file-hook()
  "hgb hooks for when file is loaded"
@@ -336,6 +320,7 @@
 	  ) ;; prog
 	) ;; if fbound CUA-mode
 )
+
 
 ;; setup cc-mode
 (defun customize-cc-mode()	      
@@ -638,20 +623,7 @@ replacements are only done on that region"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;
-;; Make Emacs understand Ant's output.
-;; http://www.skybert.nu/files/emacs/.emacs-java
-;;
-(require 'compile)
-(setq compilation-error-regexp-alist
-		(append
-		 (list
-		  ;; works for jikes
-		  '("^\\s-*\\[[^]]*\\]\\s-*\\(.+\\):\\([0-9]+\\):\\([0-9]+\\):[0-9]+:[0-9]+:" 
-			 1 2 3)
-		  ;; works for javac
-		  '("^\\s-*\\[[^]]*\\]\\s-*\\(.+\\):\\([0-9]+\\):" 1 2))
-		 compilation-error-regexp-alist))
+(load "lua_mode")
 
 ;;
 ;; font lock schemes
@@ -665,20 +637,16 @@ replacements are only done on that region"
 ;(my-color-theme)
 ;;(load "my-macros.el")
 
-(add-to-list 'load-path "/home/hugh/Gits/magit")
-(eval-after-load 'info
-  '(progn (info-initialize)
-          (add-to-list 'Info-directory-list "/home/hugh/Gits/magit/")))
-(require 'magit)
-(global-set-key (kbd "M-m") 'magit-status)
+;(add-to-list 'load-path "/home/hugh/Gits/magit")
+;(eval-after-load 'info
+;  '(progn (info-initialize)
+;          (add-to-list 'Info-directory-list "/home/hugh/Gits/magit/")))
+;(require 'magit)
+;(global-set-key (kbd "M-m") 'magit-status)
 
 
-(require 'markdown-mode)
+;(require 'markdown-mode)
 
-;; load emacs 24's package system. Add MELPA repository.
-(when (>= emacs-major-version 24)
-  (require 'package)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t))
 
 ;;
 ;; gets saved by the color theme saver
@@ -695,3 +663,47 @@ replacements are only done on that region"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+
+;;
+;;  org-mode setup
+;;
+
+;; setup code snippets in org mode
+(setq org-src-fontify-natively t)
+(setq org-src-tab-acts-natively t)
+
+;; for Minted Setup
+(setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted"))
+      org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+
+;; set some sensible margins
+;; But sadly, this causes the rendering of source code ourput to BREAK !!
+;(setq org-latex-packages-alist '(("margin=2cm" "geometry" nil)))
+
+;;
+;; Chromebook settings for Org mode
+;;
+
+;; we dont want these global it is a problem everywhere else
+;;
+;;(global-set-key [prior] 'org-move-subtree-up) ;; chromebook alt-up
+;;(global-set-key [next] 'org-move-subtree-down) ;; chromebook alt-up
+
+(add-hook 'org-mode-hook
+  (lambda ()
+    ;; add key bindings that need to work in org-mode that use the ALT key
+    (local-set-key [prior] 'org-move-subtree-up)              ;; chromebook alt-up
+    (local-set-key [next] 'org-move-subtree-down)             ;; chromebook alt-up
+    (local-set-key (kbd "M-<right>") 'org-metaright)          ;; chromebook alt-right
+    (local-set-key (kbd "M-<left>")  'org-metaleft)           ;; chromebook alt-left
+    ;;
+    ))
+
+;; Chromebook setup, no page down, page up keys
+(global-set-key (kbd "C-<up>")  'scroll-down-command) ;; control-up 
+(global-set-key (kbd "C-<down>")  'scroll-up-command) ;; control-down
+
